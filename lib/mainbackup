@@ -1,0 +1,110 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'AllPersonData.dart';
+
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  get lista => null;
+  get index => null;
+
+  Future allPerson() async {
+    var url = "http://192.168.0.238/imagenes/viewAll.php";
+    var response = await http.get(Uri.parse(url));
+    return json.decode(response.body);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    allPerson();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Base de Datos Libros'),
+          ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text('Opciones Crud'),
+              ),
+              ListTile(
+                title: const Text('Agregar Libro'),
+                onTap: (){
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AllPersonData()));
+                },
+              ),
+              ListTile(
+                title: const Text('Eliminar Libro'),
+                onTap: (){},
+              ),
+              ListTile(
+                title: const Text('Modificar Libro'),
+                onTap: (){
+
+                },
+              ),
+            ],
+          ),
+        ),
+
+        body: FutureBuilder(
+            future: allPerson(),
+            builder: (BuildContext ctx, AsyncSnapshot snapshot) => snapshot
+                    .hasData
+                ? ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (BuildContext context, index) => Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Container(
+                          width: 100,
+                          height: 100,
+                          child: Image.network(
+                              "http://192.168.0.238/imagenes/uploads/${snapshot.data![index]['image']}"),
+                        ),
+                        subtitle:
+                            Center(child: Text(snapshot.data![index]['name'])),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: CircularProgressIndicator(),
+                  )));
+  }
+}
+
+
